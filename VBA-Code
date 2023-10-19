@@ -1,0 +1,117 @@
+Sub StockAnalysis()
+    Dim ws As Worksheet
+    Dim tickerSymbol As String
+    Dim openingPrice As Double
+    Dim closingPrice As Double
+    Dim yearlyChange As Double
+    Dim percentChange As Double
+    Dim totalVolume As Double
+    Dim lastRow As Long
+    Dim summaryRow As Long
+    Dim maxPercentIncrease As Double
+    Dim maxPercentDecrease As Double
+    Dim maxTotalVolume As Double
+    Dim maxPercentIncreaseTicker As String
+    Dim maxPercentDecreaseTicker As String
+    Dim maxTotalVolumeTicker As String
+    
+    maxPercentIncrease = -100
+    maxPercentDecrease = 100
+    maxTotalVolume = 0
+    
+    For Each ws In ThisWorkbook.Worksheets
+    tickerSymbol = ""
+    openingPrice = 0
+    closingPrice = 0
+    yearlyChange = 0
+    percentChange = 0
+    totalVolume = 0
+    summaryRow = 2
+    
+    lastRow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+    
+    ws.Range("I1").Value = "Ticker Symbol"
+    ws.Range("J1").Value = "Yearly Change"
+    ws.Range("K1").Value = "Percent Change"
+    ws.Range("L1").Value = "Total Volume"
+    
+    For i = 2 To lastRow
+    
+    If ws.Cells(i, 1).Value <> ws.Cells(i + 1, 1).Value Then
+        tickerSymbol = ws.Cells(i, 1).Value
+        closingPrice = ws.Cells(i, 6).Value
+        yearlyChange = closingPrice - openingPrice
+        
+        If openingPrice <> 0 Then
+            percentChange = yearlyChange / openingPrice
+        Else
+            percentChange = 0
+        End If
+        
+        ws.Range("I" & summaryRow).Value = tickerSymbol
+        ws.Range("J" & summaryRow).Value = yearlyChange
+        ws.Range("K" & summaryRow).Value = percentChange
+        ws.Range("L" & summaryRow).Value = totalVolume
+    
+
+        ws.Range("K" & summaryRow).NumberFormat = "0.00%"
+    
+        If yearlyChange >= 0 Then
+            ws.Range("J" & summaryRow).Interior.ColorIndex = 4
+        Else
+            ws.Range("J" & summaryRow).Interior.ColorIndex = 3
+        End If
+        
+        summaryRow = summaryRow + 1
+        
+        openingPrice = 0
+        closingPrice = 0
+        yearlyChange = 0
+        percentChange = 0
+        totalVolume = 0
+        
+    End If
+    
+    totalVolume = totalVolume + ws.Cells(i, 7).Value
+    
+    If openingPrice = 0 Then
+        openingPrice = ws.Cells(i, 3).Value
+    End If
+    
+    If percentChange > maxPercentIncrease Then
+        maxPercentIncrease = percentChange
+        maxPercentIncreaseTicker = tickerSymbol
+    End If
+        
+    If percentChange < maxPercentDecrease Then
+        maxPercentDecrease = percentChange
+        maxPercentDecreaseTicker = tickerSymbol
+    End If
+        
+    If totalVolume > maxTotalVolume Then
+         maxTotalVolume = totalVolume
+         maxTotalVolumeTicker = tickerSymbol
+    End If
+  Next i
+
+    ws.Range("O2").Value = "Greatest % Increase"
+    ws.Range("O3").Value = "Greatest % Decrease"
+    ws.Range("O4").Value = "Greatest Total Volume"
+    
+    ws.Range("P1").Value = "Ticker"
+    ws.Range("Q1").Value = "Value"
+    
+    ws.Range("P2").Value = maxPercentIncreaseTicker
+    ws.Range("Q2").Value = maxPercentIncrease
+    
+    ws.Range("P3").Value = maxPercentDecreaseTicker
+    ws.Range("Q3").Value = maxPercentDecrease
+    
+    ws.Range("P4").Value = maxTotalVolumeTicker
+    ws.Range("Q4").Value = maxTotalVolume
+    
+    ws.Columns("I:Q").AutoFit
+    
+    Next ws
+End Sub
+
